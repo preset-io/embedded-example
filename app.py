@@ -8,8 +8,8 @@ from flask import Flask, render_template, jsonify
 load_dotenv()
 
 # Load environment variables from the .env file
-APIToken = os.environ.get("APIToken")
-APISecret = os.environ.get("APISecret")
+api_token = os.environ.get("APIToken")
+api_secret = os.environ.get("APISecret")
 dashboard_id = os.environ.get("DashID")
 superset_domain = os.environ.get("SupersetDomain")
 preset_team = os.environ.get("PresetTeam")
@@ -29,8 +29,8 @@ def guest_token():
 	## 1. Authenticate with Preset API
 	url = "https://manage.app.preset.io/api/v1/auth/"
 	payload = json.dumps({
-		"name": APIToken,
-		"secret": APISecret
+		"name": api_token,
+		"secret": api_secret
 	})
 
 	headers = {
