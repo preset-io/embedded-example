@@ -7,11 +7,11 @@ Sample (and extremely simple) Embedded app that can be used to reproduce/investi
 1. Clone the repository.
 2. Duplicate the `.env-example` file, and save it as `.env`. 
 3. Replace all values in there accordingly (no need to add quotes etc):
-    a) Replace `Your API Token` with a token created (and enabled) from Manager (line 1).
-    b) Replace `Your API Secret` with its corresponding secret (line 2).
-    c) Replace `WorkspaceSlug` and `WorkspaceRegion` in the URL (line 4).  
-    d) Replace `Team Slug` with your Team Slug (line 5).
-    e) Replace `Workspace Slug` with the Workspace Slug (line 6). 
+* Replace `Your API Token` with a token created (and enabled) from Manager (line 1).
+* Replace `Your API Secret` with its corresponding secret (line 2).
+* Replace `WorkspaceSlug` and `WorkspaceRegion` in the URL (line 4).  
+* Replace `Team Slug` with your Team Slug (line 5).
+* Replace `Workspace Slug` with the Workspace Slug (line 6). 
 4. Make sure you have `pyenv` installed, so you can properly create and manage Python virtual environments.
 5. Create a new virtual environment for this project.
 6. Run `pip install --upgrade pip` to update pip.
