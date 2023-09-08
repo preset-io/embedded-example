@@ -1,70 +1,135 @@
-import json
-import os
-import requests
+"""
+Main entry point for this example app
+"""
 
+import logging
+import os
+
+import requests
 from dotenv import load_dotenv
-from flask import Flask, render_template, jsonify
+from flask import Flask, jsonify, render_template
+from yarl import URL
 
 load_dotenv()
 
-# Load environment variables from the .env file
-api_token = os.environ.get("APIToken")
-api_secret = os.environ.get("APISecret")
-dashboard_id = os.environ.get("DashID")
-superset_domain = os.environ.get("SupersetDomain")
-preset_team = os.environ.get("PresetTeam")
-workspace_slug = os.environ.get("WorkspaceSlug")
-
 app = Flask(__name__)
 
-# Serve the index.html page
-@app.route('/')
+# Load environment variables from the .env file
+app.config.from_mapping(
+    {
+        "API_TOKEN": os.environ.get("API_TOKEN"),
+        "API_SECRET": os.environ.get("API_SECRET"),
+        "DASHBOARD_ID": os.environ.get("DASHBOARD_ID"),
+        "SUPERSET_DOMAIN": os.environ.get("SUPERSET_DOMAIN"),
+        "PRESET_TEAM": os.environ.get("PRESET_TEAM"),
+        "WORKSPACE_SLUG": os.environ.get("WORKSPACE_SLUG"),
+        "PRESET_BASE_URL": URL("https://api.app.preset.io/"),
+    },
+)
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s:%(levelname)s:%(message)s",
+    handlers=[logging.StreamHandler()],
+)
+
+
+@app.route("/")
 def hello():
-	return render_template('index.html', dashboardId = dashboard_id, supersetDomain = superset_domain)
+    """
+    Default route to load index.html (loads the Embedded SDK).
+    """
+    return render_template(
+        "index.html",
+        dashboardId=app.config["DASHBOARD_ID"],
+        supersetDomain=app.config["SUPERSET_DOMAIN"],
+    )
 
 
-# Authentication side
 @app.route("/guest-token", methods=["GET"])
-def guest_token():
-	## 1. Authenticate with Preset API
-	url = "https://manage.app.preset.io/api/v1/auth/"
-	payload = json.dumps({
-		"name": api_token,
-		"secret": api_secret
-	})
+def guest_token_generator():
+    """
+    Route used by frontend to retrieve a Guest Token.
+    """
+    jwt_token = authenticate_with_preset()
+    guest_token = jsonify(fetch_guest_token(jwt_token))
+    return guest_token
 
-	headers = {
-		'Content-Type': 'application/json',
-		'Accept': 'application/json'
-	}
 
-	response1 = requests.request("POST", url, headers=headers, data=payload)
-	preset_access_token = json.loads(response1.text)['payload']['access_token']
+def authenticate_with_preset():
+    """
+    Authenticate with the Preset API to generate a JWT token.
+    """
+    url = app.config["PRESET_BASE_URL"] / "v1/auth/"
+    payload = {"name": app.config["API_TOKEN"], "secret": app.config["API_SECRET"]}
+    headers = {"Content-Type": "application/json", "Accept": "application/json"}
 
-	## 2. Fetch Guest Token for Embedded Dashboard
-	payload = json.dumps({
-		"user": {
-			"username": "test_user",
-			"first_name": "test",
-			"last_name": "user"
-		},
-		"resources": [{
-			"type": "dashboard",
-			"id": f"{dashboard_id}"
-		}],
-		"rls": [
-			#{ "dataset": dataset_id, "clause": "column = 'filter'" },
-		]
-	})
+    try:
+        response = requests.post(
+            url,
+            headers=headers,
+            json=payload,
+            timeout=7,
+        )
+        response.raise_for_status()
+        return response.json()["payload"]["access_token"]
+    except requests.exceptions.HTTPError as http_error:
+        error_msg = "HTTP Error: " + http_error.response.text
+        logging.error(
+            "\nERROR: Unable to generate a JWT token.\nError details: %s",
+            error_msg,
+        )
+        return os._exit(1)
 
-	bearer_token = "Bearer " + preset_access_token
-	response2 = requests.post(
-		f"https://manage.app.preset.io/api/v1/teams/{preset_team}/workspaces/{workspace_slug}/guest-token/",
-		data=payload,
-		headers={ "Authorization": bearer_token, 'Accept': 'application/json', 'Content-Type': 'application/json' })
-	
-	# Return guest_token as valid JSON to frontend
-	return jsonify(response2.json()['payload']['token'])
 
-if __name__ == "__main__":                                                                                                  # Settings to be applied when running locally
+def fetch_guest_token(jwt):
+    """
+    Fetch and return a Guest Token for the embedded dashboard.
+    """
+    url = (
+        app.config["PRESET_BASE_URL"]
+        / "v1/teams"
+        / app.config["PRESET_TEAM"]
+        / "workspaces"
+        / app.config["WORKSPACE_SLUG"]
+        / "guest-token/"
+    )
+    print(url)
+    payload = {
+        "user": {"username": "test_user", "first_name": "test", "last_name": "user"},
+        "resources": [{"type": "dashboard", "id": app.config["DASHBOARD_ID"]}],
+        "rls": [
+            # Apply an RLS to a specific dataset
+            # { "dataset": dataset_id, "clause": "column = 'filter'" },
+            # Apply an RLS to all datasets
+            # { "clause": "column = 'filter'" },
+        ],
+    }
+
+    headers = {
+        "Authorization": f"Bearer {jwt}",
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        response = requests.post(
+            url,
+            headers=headers,
+            json=payload,
+            timeout=7,
+        )
+        response.raise_for_status()
+        return response.json()["payload"]["token"]
+    except requests.exceptions.HTTPError as http_error:
+        error_msg = "HTTP Error: " + http_error.response.text
+        logging.error(
+            "\nERROR: Unable to fetch a Guest Token.\nError details: %s",
+            error_msg,
+        )
+        return os._exit(1)
+
+
+if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=True)

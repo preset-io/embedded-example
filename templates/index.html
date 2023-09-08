@@ -1,12 +1,14 @@
 <head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preset Test Embedded App</title>
 
 	<!-- Loading the Preset Embedded SDK from the CDN -->
 	<script src="https://unpkg.com/@preset-sdk/embedded"></script>
-
 </head>
 
 <body>
-
+	<!-- Specifying the iframe size -->
 	<style>
         iframe
         {
@@ -26,16 +28,22 @@
 		}
 
 		// 2. Uses Preset Embedded SDK to embed the dashboard as an iFrame
+		
+		const dashboardId = "{{ dashboardId }}";
+    	const supersetDomain = "{{ supersetDomain }}";
+
 		const myLightDashboard = presetSdk.embedDashboard({
-			id: "{{dashboardId}}",
-		  	supersetDomain: "{{supersetDomain}}",
+			id: dashboardId,
+		  	supersetDomain: supersetDomain,
 		  	mountPoint: document.getElementById("dashboard-container"), // any html element that can contain an iframe
 		  	fetchGuestToken: async () => fetchGuestTokenFromBackend(),
-		  	dashboardUiConfig: { // dashboard UI config: hideTitle, hideTab, hideChartControls (optional)
-				hideTitle: false,
-				hideTab: false,
-				hideChartControls: false,
-			},
+		  	dashboardUiConfig: { // dashboard UI config: hideTitle, hideChartControls, filters (all optional)
+				hideTitle: false, // change it to `true` to hide the dashboard title
+				hideChartControls: false, // change it to `true` to hide the chart controls (ellipses menu)
+				filters: {
+					expanded: true, // change it to `false` so that dashboard filters are collapsed (for vertical filter bar)
+				},
+			}
 		});
 	</script>
 </body>

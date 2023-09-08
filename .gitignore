@@ -1,2 +1,24 @@
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+.mypy_cache/
+
+# Environment variables
 .env
-templates/index_modified.html
+
+# Per-project virtualenvs
+.venv*/
+.conda*/
+.python-version
+
+# IDEs and editors
+*.swp
+*.swo
+*.swn
+.vscode/
+.idea/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
