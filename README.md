@@ -1,7 +1,7 @@
 # ce-embedded
 
-Sample (and extremely simple) FLask app that can be used to experience the Preset Embedding experience!
-Note that this app shouldn't be used in a Production environment.
+Sample (and extremely simple) FLask app that can be used to test the Preset Embedding experience!
+**_Note that this app is solely intended to demonstrate the embedded implementation, and shouldn't be used in a Production environment._**
 
 ## How to use it
 
@@ -13,7 +13,7 @@ Start by cloning the repository to your local environment. Then, duplicate the `
 
 #### Authentiation details _(optional)_
 
-**DISCLAIMER:** Your API token and secret are **only stored in this local file** -- this information is not processed or synced anywhere else. It's also possible to run this app without providing your credentials, however you would have to generate the Guest Token on your end (for example, using Postman), and then provide the Guest Token to the SDK. Additionally, the Guest Token is only valid for 5 minutes, so after that you might start facing errors when interacting the embedded dashboard.
+**DISCLAIMER:** Your API token and secret are **only stored in this local file** -- this information is not processed or synced anywhere else. It's also possible to run this app without providing your credentials, however you would have to generate the Guest Token on your end (for example, using Postman), and then provide the Guest Token to the SDK. Additionally, the Guest Token is only valid for 5 minutes, so after that you might start facing errors when interacting with the embedded dashboard.
 
 If you would like to avoid adding your credentials to this file, feel free to just skip this step.
 
@@ -56,17 +56,11 @@ Since the Guest Token is only valid for 5 minutes, the SDK automatically refresh
 
 ```javascript
 const myLightDashboard = presetSdk.embedDashboard({
-  id: "{{dashboardId}}",
-  supersetDomain: "{{supersetDomain}}",
+  id: dashboardId,
+  supersetDomain: supersetDomain,
   mountPoint: document.getElementById("dashboard-container"), // any html element that can contain an iframe
   fetchGuestToken: async () => fetchGuestTokenFromBackend(), // `fetchGuestTokenFromBackend()` is a function that returns a Guest Token
-  dashboardUiConfig: {
-    hideTitle: false,
-    hideChartControls: false,
-    filters: {
-      expanded: true,
-    },
-  },
+  dashboardUiConfig: {},
 });
 ```
 
@@ -76,21 +70,17 @@ If you don't want to add your API credentials to this example app, you can inste
 
 ```javascript
 const myLightDashboard = presetSdk.embedDashboard({
-  id: "{{dashboardId}}",
-  supersetDomain: "{{supersetDomain}}",
+  id: dashboardId,
+  supersetDomain: supersetDomain,
   mountPoint: document.getElementById("dashboard-container"), // any html element that can contain an iframe
   fetchGuestToken: () => "{{myGuestToken}}", // Replace `{{myGuestToken}}` with the generated token
-  dashboardUiConfig: {
-    hideTitle: false,
-    hideChartControls: false,
-    filters: {
-      expanded: true,
-    },
-  },
+  dashboardUiConfig: {},
 });
 ```
 
-Note that the token is only valid for 5 minutes, so since the SDK won't be able to refresh it, you'll start facing errors when trying to interact with the dashboard after that time.
+_Refer to [this API endpoint documentation](https://api-docs.preset.io/#b1a9877e-958d-4957-8939-a6d0d3f10e70) to check how to generate a guest token._
+
+Note that the token is **only valid for 5 minutes**, so since the SDK won't be able to refresh it, you'll start facing errors when trying to interact with the dashboard after that time.
 
 ### `dashboardUiConfig` parameters
 
@@ -98,8 +88,8 @@ The Preset SDK has configurations that can be modified to change the embedding e
 
 ```javascript
 const myLightDashboard = presetSdk.embedDashboard({
-  id: "{{dashboardId}}",
-  supersetDomain: "{{supersetDomain}}",
+  id: dashboardId,
+  supersetDomain: supersetDomain,
   mountPoint: document.getElementById("dashboard-container"), // any html element that can contain an iframe
   fetchGuestToken: async () => fetchGuestTokenFromBackend(),
   dashboardUiConfig: {
