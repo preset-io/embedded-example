@@ -1,6 +1,6 @@
 # ce-embedded
 
-Sample (and extremely simple) FLask app that can be used to test the Preset Embedding experience!
+Sample (and extremely simple) Flask app that can be used to test the Preset Embedding experience!
 **_Note that this app is solely intended to demonstrate the embedded implementation, and shouldn't be used in a Production environment._**
 
 ## How to use it
@@ -9,11 +9,13 @@ This project uses Python to run a Flask app. We strongly encourage using a [Pyth
 
 ### Implementation actions
 
-Start by cloning the repository to your local environment. Then, duplicate the `.env-example` file, and save it as `.env` in the root folder (the file is automatically git-ignored). This file is responsible for providing the app with your credentials, team and dashboard information. Replace template values in there accordingly (no need to add quotes etc). Let's take a look on how to fill it:
+Start by cloning the repository to your local environment. Then, duplicate the `.env-example` file, and save it as `.env` in the root folder (the file is automatically git-ignored). This file is responsible for providing the app with your credentials, team and dashboard information. Replace template values in there accordingly (you might need to add quotes if the values have special characters).
 
-#### Authentiation details _(optional)_
+Let's take a look on how to fill it:
 
-**DISCLAIMER:** Your API token and secret are **only stored in this local file** -- this information is not processed or synced anywhere else. It's also possible to run this app without providing your credentials, however you would have to generate the Guest Token on your end (for example, using Postman), and then provide the Guest Token to the SDK. Additionally, the Guest Token is only valid for 5 minutes, so after that you might start facing errors when interacting with the embedded dashboard.
+#### Authentication details _(optional)_
+
+**DISCLAIMER:** Your API token and secret are **only stored in this local file** — this information is not processed or synced anywhere else. It's also possible to run this app without providing your credentials, however you would have to generate the Guest Token on your end (for example, using Postman), and then provide the Guest Token to the SDK. Additionally, the Guest Token is only valid for 5 minutes, so after that you might start facing errors when interacting with the embedded dashboard.
 
 If you would like to avoid adding your credentials to this file, feel free to just skip this step.
 
@@ -40,12 +42,12 @@ Make sure you have already enabled the **Embedded mode** for the dashboard you w
 
 ### Running the application
 
-1. Run `python app.py` in the terminal (inside the root folder). This would start the Flask app.
-2. Access `http://127.0.0.1:8080/` on the browser. You should see an `iframe` in the full browser size, which would load the dashboard in embedded mode.
+1. Run `flask --app app run` in the terminal (inside the root folder). This would start the Flask app.
+2. Access `http://127.0.0.1:5080/` on the browser. You should see an `iframe` in the full browser size, which would load the dashboard in embedded mode.
 
 ### Stopping the app
 
-1. Once testing is done, press `control + C` in the terminal to stop the Flask app.
+1. Once testing is done, press <kbd>control + C</kbd> in the terminal to stop the Flask app.
 2. Deactivate the virtual environment.
 
 ## Changing the app configurations
@@ -84,7 +86,7 @@ Note that the token is **only valid for 5 minutes**, so since the SDK won't be a
 
 ### `dashboardUiConfig` parameters
 
-The Preset SDK has configurations that can be modified to change the embedding experience. These can be configured using the `dashboardUiConfig` parameter. In this test app, this configuration is currently implemented in the `templates/index.html` file ([line 40](https://github.com/preset-io/ce-embedded/blob/master/templates/index.html#L40)):
+The Preset SDK has configurations that can be modified to change the embedding experience. These can be configured using the `dashboardUiConfig` parameter. In this test app, this configuration is currently implemented in the `templates/index.html` file ([line 40](https://github.com/preset-io/ce-embedded/blob/6bf0774a2cc0999b33de37de4b57dbc8f500b17c/templates/index.html#L40)):
 
 ```javascript
 const myLightDashboard = presetSdk.embedDashboard({
@@ -105,7 +107,7 @@ const myLightDashboard = presetSdk.embedDashboard({
 
 ### Customizing the Guest Token permissions
 
-By default, the Guest Token is generated with **no RLS applied**, and access is only granted to the **Dashboard ID** specified previously. You can customize the Guest Token configuration in the `app.py` file ([line 103](https://github.com/preset-io/ce-embedded/blob/master/app.py#L103)):
+By default, the Guest Token is generated with **no RLS applied**, and access is only granted to the **Dashboard ID** specified previously. You can customize the Guest Token configuration in the `app.py` file ([line 103](https://github.com/preset-io/ce-embedded/blob/6bf0774a2cc0999b33de37de4b57dbc8f500b17c/templates/index.html#L103)):
 
 ```python
 payload = json.dumps({
