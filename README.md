@@ -42,7 +42,7 @@ Make sure you have already enabled the **Embedded mode** for the dashboard you w
 
 ### Running the application
 
-1. Run `flask --app app run --port=8080 --debug` in the terminal (inside the root folder). This would start the Flask app. Feel free to change the `--port` value, but make sure you also update it in the frontend code. The `--debug` flag ensure the server automatically reloads when changes are saved to the `app.py` file.
+1. Run `flask --app app run --port=8080 --debug` in the terminal (inside the root folder). This would start the Flask app. Feel free to change the `--port` value, but make sure you also update it in the frontend code. The `--debug` flag ensures the server automatically reloads when changes are saved to the `app.py` file.
 2. Access `http://127.0.0.1:8080/` on the browser. You should see an `iframe` in the full browser size, which would load the dashboard in embedded mode.
 
 ### Stopping the app

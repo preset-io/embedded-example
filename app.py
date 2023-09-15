@@ -84,7 +84,8 @@ def authenticate_with_preset():
             error_msg,
         )
         raise requests.exceptions.HTTPError(
-            "Unable to generate a JWT token. Please make sure your API key is enabled.",
+            """Unable to generate a JWT token.
+            Please make sure your API key is enabled.""",
         )
 
 
