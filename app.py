@@ -57,7 +57,7 @@ def guest_token_generator():
         guest_token = jsonify(fetch_guest_token(jwt_token))
         return guest_token, 200
     except requests.exceptions.HTTPError as error:
-        return jsonify({"error": str(error)}), 400
+        return jsonify({"error": str(error)}), 500
 
 
 def authenticate_with_preset():

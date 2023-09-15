@@ -42,7 +42,7 @@ Make sure you have already enabled the **Embedded mode** for the dashboard you w
 
 ### Running the application
 
-1. Run `flask --app app run --port=8080 --debug` in the terminal (inside the root folder). This would start the Flask app. Feel free to change the `--port` value, but make sure you also update it in the frontend code. The `--debug` flag ensures the server automatically reloads when changes are saved to the `app.py` file.
+1. Run `flask --app app run --port=8080 --debug` in the terminal (inside the root folder). This would start the Flask app. Feel free to change the `--port` value, but make sure you also update it in the [frontend code](https://github.com/preset-io/ce-embedded/blob/2b21e7f17e0136c5ddcd8097e32ce05c2205fbd9/templates/index.html#L25). The `--debug` flag ensures the server automatically reloads when changes are saved to the `app.py` file.
 2. Access `http://127.0.0.1:8080/` on the browser. You should see an `iframe` in the full browser size, which would load the dashboard in embedded mode.
 
 ### Stopping the app
@@ -86,7 +86,7 @@ Note that the token is **only valid for 5 minutes**, so since the SDK won't be a
 
 ### `dashboardUiConfig` parameters
 
-The Preset SDK has configurations that can be modified to change the embedding experience. These can be configured using the `dashboardUiConfig` parameter. In this test app, this configuration is currently implemented in the `templates/index.html` file ([line 40](https://github.com/preset-io/ce-embedded/blob/6bf0774a2cc0999b33de37de4b57dbc8f500b17c/templates/index.html#L40)):
+The Preset SDK has configurations that can be modified to change the embedding experience. These can be configured using the `dashboardUiConfig` parameter. In this test app, this configuration is currently implemented in the `templates/index.html` file ([line 44](https://github.com/preset-io/ce-embedded/blob/2b21e7f17e0136c5ddcd8097e32ce05c2205fbd9/templates/index.html#L44)):
 
 ```javascript
 const myLightDashboard = presetSdk.embedDashboard({
@@ -107,7 +107,7 @@ const myLightDashboard = presetSdk.embedDashboard({
 
 ### Customizing the Guest Token permissions
 
-By default, the Guest Token is generated with **no RLS applied**, and access is only granted to the **Dashboard ID** specified previously. You can customize the Guest Token configuration in the `app.py` file ([line 103](https://github.com/preset-io/ce-embedded/blob/6bf0774a2cc0999b33de37de4b57dbc8f500b17c/templates/index.html#L103)):
+By default, the Guest Token is generated with **no RLS applied**, and access is only granted to the **Dashboard ID** specified previously. You can customize the Guest Token configuration in the `app.py` file ([line 104](https://github.com/preset-io/ce-embedded/blob/2b21e7f17e0136c5ddcd8097e32ce05c2205fbd9/app.py#L104)):
 
 ```python
 payload = json.dumps({
