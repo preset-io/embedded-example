@@ -1,4 +1,4 @@
-# ce-embedded
+# embedded-example
 
 Sample (and extremely simple) Flask app that can be used to test the Preset Embedding experience!
 **_Note that this app is solely intended to demonstrate the embedded implementation, and shouldn't be used in a Production environment._**
