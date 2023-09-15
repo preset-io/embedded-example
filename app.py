@@ -84,8 +84,8 @@ def authenticate_with_preset():
             error_msg,
         )
         raise requests.exceptions.HTTPError(
-            """Unable to generate a JWT token.
-            Please make sure your API key is enabled.""",
+            "Unable to generate a JWT token. "
+            "Please make sure your API key is enabled.",
         )
 
 
@@ -134,8 +134,8 @@ def fetch_guest_token(jwt):
             error_msg,
         )
         raise requests.exceptions.HTTPError(
-            """"Unable to generate a Guest token.
-            Please make sure the API key has admin access and the payload is correct.""",
+            "Unable to generate a Guest token. "
+            "Please make sure the API key has admin access and the payload is correct.",
         )
 
 
