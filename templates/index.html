@@ -24,7 +24,12 @@
 		async function fetchGuestTokenFromBackend() {
 			let response = await fetch('http://127.0.0.1:8080/guest-token');
 			let data = await response.json()
-			return data
+			console.debug(data);
+			if (data["error"]){
+				alert("ERRROR: " + data.error);
+				return null;
+			}
+			return data;
 		}
 
 		// 2. Uses Preset Embedded SDK to embed the dashboard as an iFrame

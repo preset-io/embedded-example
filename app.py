@@ -4,7 +4,6 @@ Main entry point for this example app
 
 import logging
 import os
-import sys
 
 import requests
 from dotenv import load_dotenv
@@ -37,7 +36,7 @@ logging.basicConfig(
 
 
 @app.route("/")
-def hello():
+def main_page():
     """
     Default route to load index.html (loads the Embedded SDK).
     """
@@ -53,9 +52,12 @@ def guest_token_generator():
     """
     Route used by frontend to retrieve a Guest Token.
     """
-    jwt_token = authenticate_with_preset()
-    guest_token = jsonify(fetch_guest_token(jwt_token))
-    return guest_token
+    try:
+        jwt_token = authenticate_with_preset()
+        guest_token = jsonify(fetch_guest_token(jwt_token))
+        return guest_token, 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 
 def authenticate_with_preset():
@@ -76,12 +78,12 @@ def authenticate_with_preset():
         response.raise_for_status()
         return response.json()["payload"]["access_token"]
     except requests.exceptions.HTTPError as http_error:
-        error_msg = "HTTP Error: " + http_error.response.text
+        error_msg = http_error.response.text
         logging.error(
             "\nERROR: Unable to generate a JWT token.\nError details: %s",
             error_msg,
         )
-        return sys.exit(1)
+        raise Exception("Unable to generate a JWT token. Please make sure your API key is enabled.")
 
 
 def fetch_guest_token(jwt):
@@ -123,13 +125,13 @@ def fetch_guest_token(jwt):
         response.raise_for_status()
         return response.json()["payload"]["token"]
     except requests.exceptions.HTTPError as http_error:
-        error_msg = "HTTP Error: " + http_error.response.text
+        error_msg = http_error.response.text
         logging.error(
             "\nERROR: Unable to fetch a Guest Token.\nError details: %s",
             error_msg,
         )
-        return sys.exit(1)
+        raise Exception("Unable to generate a Guest token. Please make sure the API key has admin access and the payload is correct.")
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    app.run(host="0.0.0.0")
