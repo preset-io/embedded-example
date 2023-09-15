@@ -56,8 +56,8 @@ def guest_token_generator():
         jwt_token = authenticate_with_preset()
         guest_token = jsonify(fetch_guest_token(jwt_token))
         return guest_token, 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
+    except requests.exceptions.HTTPError as error:
+        return jsonify({"error": str(error)}), 400
 
 
 def authenticate_with_preset():
@@ -83,7 +83,9 @@ def authenticate_with_preset():
             "\nERROR: Unable to generate a JWT token.\nError details: %s",
             error_msg,
         )
-        raise Exception("Unable to generate a JWT token. Please make sure your API key is enabled.")
+        raise requests.exceptions.HTTPError(
+            "Unable to generate a JWT token. Please make sure your API key is enabled.",
+        )
 
 
 def fetch_guest_token(jwt):
@@ -130,7 +132,10 @@ def fetch_guest_token(jwt):
             "\nERROR: Unable to fetch a Guest Token.\nError details: %s",
             error_msg,
         )
-        raise Exception("Unable to generate a Guest token. Please make sure the API key has admin access and the payload is correct.")
+        raise requests.exceptions.HTTPError(
+            """"Unable to generate a Guest token.
+            Please make sure the API key has admin access and the payload is correct.""",
+        )
 
 
 if __name__ == "__main__":

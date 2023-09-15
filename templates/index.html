@@ -24,7 +24,6 @@
 		async function fetchGuestTokenFromBackend() {
 			let response = await fetch('http://127.0.0.1:8080/guest-token');
 			let data = await response.json()
-			console.debug(data);
 			if (data["error"]){
 				alert("ERRROR: " + data.error);
 				return null;
