@@ -4,6 +4,7 @@ Main entry point for this example app
 
 import logging
 import os
+import sys
 
 import requests
 from dotenv import load_dotenv
@@ -80,7 +81,7 @@ def authenticate_with_preset():
             "\nERROR: Unable to generate a JWT token.\nError details: %s",
             error_msg,
         )
-        return os._exit(1)
+        return sys.exit(1)
 
 
 def fetch_guest_token(jwt):
@@ -95,7 +96,6 @@ def fetch_guest_token(jwt):
         / app.config["WORKSPACE_SLUG"]
         / "guest-token/"
     )
-    print(url)
     payload = {
         "user": {"username": "test_user", "first_name": "test", "last_name": "user"},
         "resources": [{"type": "dashboard", "id": app.config["DASHBOARD_ID"]}],
@@ -128,7 +128,7 @@ def fetch_guest_token(jwt):
             "\nERROR: Unable to fetch a Guest Token.\nError details: %s",
             error_msg,
         )
-        return os._exit(1)
+        return sys.exit(1)
 
 
 if __name__ == "__main__":
