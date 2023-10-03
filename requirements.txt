@@ -16,8 +16,6 @@ idna==3.4
     # via
     #   requests
     #   yarl
-importlib-metadata==6.8.0
-    # via flask
 itsdangerous==2.1.2
     # via flask
 jinja2==3.1.2
@@ -32,11 +30,9 @@ python-dotenv==1.0.0
     # via -r requirements.in
 requests==2.31.0
     # via -r requirements.in
-urllib3==1.26.16
+urllib3==1.26.17
     # via requests
 werkzeug==2.3.7
     # via flask
 yarl==1.9.2
     # via -r requirements.in
-zipp==3.16.2
-    # via importlib-metadata
