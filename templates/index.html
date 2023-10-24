@@ -20,9 +20,9 @@
 	<!-- Creating a div that will be used by the SDK to embed the dashboard -->
 	<div id="dashboard-container"></div>
 	<script>
-		// 1. Request guest_token from our backend, which runs at localhost:5000 by default 
+		// 1. Request guest_token from our backend
 		async function fetchGuestTokenFromBackend() {
-			let response = await fetch('http://127.0.0.1:8080/guest-token');
+			let response = await fetch('/guest-token');
 			let data = await response.json()
 			if (data["error"]){
 				alert("ERROR: " + data.error);
@@ -32,9 +32,8 @@
 		}
 
 		// 2. Uses Preset Embedded SDK to embed the dashboard as an iFrame
-		
 		const dashboardId = "{{ dashboardId }}";
-    	const supersetDomain = "{{ supersetDomain }}";
+		const supersetDomain = "{{ supersetDomain }}";
 
 		const myLightDashboard = presetSdk.embedDashboard({
 			id: dashboardId,
