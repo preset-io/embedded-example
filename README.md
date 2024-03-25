@@ -101,6 +101,10 @@ const myLightDashboard = presetSdk.embedDashboard({
     filters: {
       expanded: true, // change it to `false` so that dashboard filters are collapsed (for vertical filter bar)
     },
+    urlParams: { // URL parameters to be used with the ``{{url_param()}}`` Jinja macro
+      param_name: "value",
+      other_param: "value",
+    }
   },
 });
 ```
