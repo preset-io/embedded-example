@@ -11,7 +11,7 @@ import click
 import jwt
 import requests
 from dotenv import load_dotenv
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 from yarl import URL
 
 load_dotenv()
@@ -54,7 +54,7 @@ logging.basicConfig(
 def generate_keys(overwrite=False):
     """Generate RSA private and public keys using OpenSSL."""
 
-    # Check if openssl is installed
+    # Check if OpenSSL is installed
     try:
         result = subprocess.run(
             ["openssl", "version"],
@@ -81,8 +81,7 @@ def generate_keys(overwrite=False):
         os.path.exists(PRIVATE_KEY_PATH) or os.path.exists(PUBLIC_KEY_PATH)
     ) and not overwrite:
         raise Exception(  # pylint: disable=broad-exception-raised
-            "Error: Key files already exist. "
-            "Use --overwrite to overwrite the existing files.",
+            "Key files already exist. Use --overwrite to overwrite the existing files.",
         )
     print("Overwriting existing PEM keys.")
 
@@ -129,29 +128,25 @@ def main_page():
     """
     Default route to load index.html (loads the Embedded SDK).
     """
+    auth_type = request.args.get("auth_type", "api")
+    if auth_type == "pem":
+        if not os.path.exists(PRIVATE_KEY_PATH) or not os.path.exists(PUBLIC_KEY_PATH):
+            raise FileNotFoundError("PEM key files not found.")
+        if app.config["KEY_ID"] is None:
+            raise KeyError("Key ID not defined in environment variables.")
+        return render_template(
+            "index.html",
+            dashboardId=app.config["DASHBOARD_ID"],
+            supersetDomain=app.config["SUPERSET_DOMAIN"],
+            authType=auth_type,
+        )
+
+    # Default to API key auth
     return render_template(
         "index.html",
         dashboardId=app.config["DASHBOARD_ID"],
         supersetDomain=app.config["SUPERSET_DOMAIN"],
         authType="api",
-    )
-
-
-@app.route("/pem-key-auth")
-def main_page_with_pem_auth():
-    """
-    Default route to load index.html (loads the Embedded SDK
-    with PEM KEY authentication).
-    """
-    if not os.path.exists(PRIVATE_KEY_PATH) or not os.path.exists(PUBLIC_KEY_PATH):
-        raise FileNotFoundError("PEM key files not found.")
-    if app.config["KEY_ID"] is None:
-        raise KeyError("Key ID not defined in environment variables.")
-    return render_template(
-        "index.html",
-        dashboardId=app.config["DASHBOARD_ID"],
-        supersetDomain=app.config["SUPERSET_DOMAIN"],
-        authType="pem",
     )
 
 

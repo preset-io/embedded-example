@@ -86,7 +86,7 @@ Note that the token is **only valid for 5 minutes**, so since the SDK won't be a
 
 #### PEM Key authentication
 
-**Note: that you must have `OpenSSL` installed to be able to generate the keys.**
+**Note: You must have `OpenSSL` installed to be able to generate the keys.**
 
 To authenticate the guest user, two API calls are needed:
 * One to authenticate your API credentials and retrieve a `JWT` token.
@@ -106,7 +106,7 @@ pbcopy < keys/embedded-example-public-key.pem
 
 Access [Preset Manager](https://manage.app.preset.io/app/), click on the three ellipses for your Workspace and select **Edit Workspace Settings**. Then navigate to the **Embedded** tab, and paste the public key content. Finally, copy the **Key Id** visible in the UI, and add it to your `.env` file.
 
-Then access `http://localhost:8081/pem-key-auth` in the browser
+Then access `http://localhost:8081/?auth_type=pem` in the browser to load the embedded dashboard using a guest token that's encoded locally.
 
 ### `dashboardUiConfig` parameters
 
