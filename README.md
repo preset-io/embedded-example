@@ -17,7 +17,7 @@ Let's take a look on how to fill it:
 
 **DISCLAIMER:** Your API token and secret are **only stored in this local file** — this information is not processed or synced anywhere else. It's also possible to run this app without providing your credentials, however you would have to generate the Guest Token on your end (for example, using Postman), and then provide the Guest Token to the SDK. Additionally, the Guest Token is only valid for 5 minutes, so after that you might start facing errors when interacting with the embedded dashboard.
 
-If you would like to avoid adding your credentials to this file, feel free to just skip this step.
+If you would like to avoid adding your credentials to this file, feel free to just skip this step, and [provide the guest token directly](https://github.com/preset-io/embedded-example?tab=readme-ov-file#providing-the-sdk-with-a-guest-token-directly) OR [authenticate using a PEM key](https://github.com/preset-io/embedded-example?tab=readme-ov-file#pem-key-authentication).
 
 - Replace `your_api_token_here` with a token created (and enabled) from Manager (line 3).
 - Replace `your_api_secret_here` with its corresponding secret (line 4).
@@ -38,7 +38,7 @@ Make sure you have already enabled the **Embedded mode** for the dashboard you w
 1. Create a new virtual environment for this project.
 2. Activate it.
 3. Run `pip install --upgrade pip` to update pip.
-4. Run `pip install -r requirements.txt` to install all dependencies for this project.
+4. Run `pip install -r requirements/requirements.txt` to install all dependencies for this project.
 
 ### Running the application
 
@@ -83,6 +83,30 @@ const myLightDashboard = presetSdk.embedDashboard({
 _Refer to [this API endpoint documentation](https://api-docs.preset.io/#b1a9877e-958d-4957-8939-a6d0d3f10e70) to check how to generate a guest token._
 
 Note that the token is **only valid for 5 minutes**, so since the SDK won't be able to refresh it, you'll start facing errors when trying to interact with the dashboard after that time.
+
+#### PEM Key authentication
+
+**Note: that you must have `OpenSSL` installed to be able to generate the keys.**
+
+To authenticate the guest user, two API calls are needed:
+* One to authenticate your API credentials and retrieve a `JWT` token.
+* Another one that uses this `JWT` to generate a `guest_token`.
+
+It's possible to use a set of public and private PEM keys to generate the `guest_token` locally and avoid these two calls. Refer to [this section](https://docs.preset.io/docs/step-2-deployment#1-create-guest-tokens-backend) if you want to generate the PEM keys on your end, or alternatively run below command to automatically create a key pair:
+
+``` bash
+flask generate-keys
+```
+
+Then, use below command to copy the public key:
+
+``` bash
+pbcopy < keys/embedded-example-public-key.pem
+```
+
+Access [Preset Manager](https://manage.app.preset.io/app/), click on the three ellipses for your Workspace and select **Edit Workspace Settings**. Then navigate to the **Embedded** tab, and paste the public key content. Finally, copy the **Key Id** visible in the UI, and add it to your `.env` file.
+
+Then access `http://localhost:8081/pem-key-auth` in the browser
 
 ### `dashboardUiConfig` parameters
 
