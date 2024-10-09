@@ -22,7 +22,9 @@
 	<script>
 		// 1. Request guest_token from our backend
 		async function fetchGuestTokenFromBackend() {
-			let response = await fetch('/guest-token');
+			const authType = "{{ authType }}";
+			target_url = authType === "api" ? '/guest-token' : '/pem-key';
+			let response = await fetch(target_url);
 			let data = await response.json()
 			if (data["error"]){
 				alert("ERROR: " + data.error);
@@ -37,10 +39,10 @@
 
 		const myLightDashboard = presetSdk.embedDashboard({
 			id: dashboardId,
-		  	supersetDomain: supersetDomain,
-		  	mountPoint: document.getElementById("dashboard-container"), // any html element that can contain an iframe
-		  	fetchGuestToken: async () => fetchGuestTokenFromBackend(),
-		  	dashboardUiConfig: { // dashboard UI config: hideTitle, hideChartControls, filters (all optional)
+			supersetDomain: supersetDomain,
+			mountPoint: document.getElementById("dashboard-container"), // any html element that can contain an iframe
+			fetchGuestToken: async () => fetchGuestTokenFromBackend(),
+			dashboardUiConfig: { // dashboard UI config: hideTitle, hideChartControls, filters (all optional)
 				hideTitle: false, // change it to `true` to hide the dashboard title
 				hideChartControls: false, // change it to `true` to hide the chart controls (ellipses menu)
 				filters: {
