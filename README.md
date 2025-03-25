@@ -60,7 +60,7 @@ Since the Guest Token is only valid for 5 minutes, the SDK automatically refresh
 const myLightDashboard = presetSdk.embedDashboard({
   id: dashboardId,
   supersetDomain: supersetDomain,
-  mountPoint: document.getElementById("dashboard-container"), // any html element that can contain an iframe
+  mountPoint: document.getElementById("dashboard-container"),
   fetchGuestToken: async () => fetchGuestTokenFromBackend(), // `fetchGuestTokenFromBackend()` is a function that returns a Guest Token
   dashboardUiConfig: {},
 });
@@ -74,7 +74,7 @@ If you don't want to add your API credentials to this example app, you can inste
 const myLightDashboard = presetSdk.embedDashboard({
   id: dashboardId,
   supersetDomain: supersetDomain,
-  mountPoint: document.getElementById("dashboard-container"), // any html element that can contain an iframe
+  mountPoint: document.getElementById("dashboard-container"),
   fetchGuestToken: () => "{{myGuestToken}}", // Replace `{{myGuestToken}}` with the generated token
   dashboardUiConfig: {},
 });
@@ -116,7 +116,7 @@ The Preset SDK has configurations that can be modified to change the embedding e
 const myLightDashboard = presetSdk.embedDashboard({
   id: dashboardId,
   supersetDomain: supersetDomain,
-  mountPoint: document.getElementById("dashboard-container"), // any html element that can contain an iframe
+  mountPoint: document.getElementById("dashboard-container"),
   fetchGuestToken: async () => fetchGuestTokenFromBackend(),
   dashboardUiConfig: {
     // dashboard UI config: hideTitle, hideChartControls (optional)
@@ -130,6 +130,48 @@ const myLightDashboard = presetSdk.embedDashboard({
       other_param: "value",
     }
   },
+});
+```
+
+### Using a custom `iframeTitle`
+
+By default, the `iframe` element is created with its title set to `Embedded Dashboard`. It's possible to specify a custom title through the `iframeTitle` parameter:
+
+```javascript
+const myLightDashboard = presetSdk.embedDashboard({
+  id: dashboardId,
+  supersetDomain: supersetDomain,
+  mountPoint: document.getElementById("dashboard-container"),
+  fetchGuestToken: async () => fetchGuestTokenFromBackend(),
+  iframeTitle: "Preset Embedded Dashboard", // optional: title for the iframe
+});
+```
+
+### Custom iframe Sandbox attributes
+
+Sandbox attributes allow you to change restrictions applied to the `iframe` element. For example, links clicked in the `iframe` (even when configured to open in a new tab) are blocked by default. To allow links to successfully load in a new tab, you can include the `allow-popups-to-escape-sandbox` sandbox property:
+
+```javascript
+const myLightDashboard = presetSdk.embedDashboard({
+  id: dashboardId,
+  supersetDomain: supersetDomain,
+  mountPoint: document.getElementById("dashboard-container"),
+  fetchGuestToken: async () => fetchGuestTokenFromBackend(),
+  iframeSandboxExtras: ['allow-popups-to-escape-sandbox'],
+});
+```
+
+### Enforce a specific referrerPolicy value for the `iframe`
+
+Your hosting app might specify a `referrerPolicy` value for `iframes`. The Referrer header needs to be included in the `iframe` request so that the allowed domains are vaildated. The example code in the `app.py` file already enforces the `strict-origin-when-cross-origin` value for the `referrerPolicy`:
+
+```javascript
+const myLightDashboard = presetSdk.embedDashboard({
+  id: dashboardId,
+  supersetDomain: supersetDomain,
+  mountPoint: document.getElementById("dashboard-container"),
+  fetchGuestToken: async () => fetchGuestTokenFromBackend(),
+  referrerPolicy: "strict-origin-when-cross-origin",
 });
 ```
 
