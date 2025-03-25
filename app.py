@@ -150,6 +150,16 @@ def main_page():
     )
 
 
+@app.route("/local")
+def local_page():
+    """
+    Default route to load index.html (loads the Embedded SDK).
+    """
+    return render_template(
+        "superset-local.html",
+    )
+
+
 @app.route("/guest-token", methods=["GET"])
 def guest_token_generator():
     """
@@ -252,7 +262,7 @@ def get_guest_token_using_pem_key():
 
     # Payload to encode
     payload = {
-        "user": {"username": "test_user", "first_name": "test", "last_name": "user"},
+        "user": {"username": "embedded_username", "first_name": "test", "last_name": "user"},
         "resources": [{"type": "dashboard", "id": app.config["DASHBOARD_ID"]}],
         "rls_rules": [
             # Apply an RLS to a specific dataset

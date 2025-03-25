@@ -1,0 +1,47 @@
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preset Test Embedded App</title>
+
+	<!-- Loading the Preset Embedded SDK from the CDN -->
+	<script src="https://unpkg.com/@preset-sdk/embedded"></script>
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+</head>
+
+<body>
+	<!-- Specifying the iframe size -->
+	<style>
+        iframe
+        {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+	
+	<!-- Creating a div that will be used by the SDK to embed the dashboard -->
+	<div id="dashboard-container" class="mdl-layout mdl-js-layout"></div>
+	<script>
+		// 1. Request guest_token from our backend
+		async function fetchGuestTokenFromBackend() {
+			let response = await fetch('/guest-token');
+			let data = await response.json()
+			if (data["error"]){
+				alert("ERROR: " + data.error);
+				return null;
+			}
+			return data;
+		}
+
+		// 2. Uses Preset Embedded SDK to embed the dashboard as an iFrame
+		const dashboardId = "{{ dashboardId }}";
+		const supersetDomain = "{{ supersetDomain }}";
+
+		const myLightDashboard = presetSdk.embedDashboard({
+			id: dashboardId,
+		  	supersetDomain: supersetDomain,
+		  	mountPoint: document.getElementById("dashboard-container"), // any html element that can contain an iframe
+		  	fetchGuestToken: async () => fetchGuestTokenFromBackend()
+		  	//dashboardUiConfig: {}
+		});
+	</script>
+</body>

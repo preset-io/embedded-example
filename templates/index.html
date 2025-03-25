@@ -5,6 +5,8 @@
 
 	<!-- Loading the Preset Embedded SDK from the CDN -->
 	<script src="https://unpkg.com/@preset-sdk/embedded"></script>
+
+	<!-- <script src="http://127.0.0.1:8000/bundle/index.js"></script> -->
 </head>
 
 <body>
@@ -33,11 +35,17 @@
 			return data;
 		}
 
+		function logChanges(changes) {
+			console.log("I'm in the method");
+			console.log("changes: ", changes);
+		}
+
 		// 2. Uses Preset Embedded SDK to embed the dashboard as an iFrame
 		const dashboardId = "{{ dashboardId }}";
 		const supersetDomain = "{{ supersetDomain }}";
 
 		const myLightDashboard = presetSdk.embedDashboard({
+		// const myLightDashboardPromise = supersetEmbeddedSdk.embedDashboard({
 			id: dashboardId,
 			supersetDomain: supersetDomain,
 			mountPoint: document.getElementById("dashboard-container"), // any html element that can contain an iframe
@@ -48,7 +56,32 @@
 				filters: {
 					expanded: true, // change it to `false` so that dashboard filters are collapsed (for vertical filter bar)
 				},
-			}
+				urlParams: {
+					// "native_filters_key": "_9K5Pi2in5uZnHYwvBfP_jOSZpRohbQjJCsFe-jie_mRHjwRAGboqjsroZa-IUbS"
+					"permalink_key": "aE6zJGOJK3k"
+				},
+				// emitDataMasks: true,
+				debug: true,
+			},
+			iframeTitle: "Custom title",
+			referrerPolicy: "no-referrer",
 		});
+
+		// myLightDashboardPromise.then(myLightDashboard => {
+		// 	const interval = setInterval(async () => {
+		// 		const { width, height } = await myLightDashboard.getScrollSize();
+		// 		if (width && height) {
+		// 			console.log("Dashboard size: ", width, height);
+		// 			const newInterval = setInterval(async () => {
+		// 				console.log("Calling the getDataMasks...");
+		// 				myLightDashboard.getDataMasks(logChanges);
+		// 			}, 4000);
+		// 			myLightDashboard.getDataMasks(logChanges());
+		// 			clearInterval(interval);
+		// 		}
+		// 	}, 1000);
+		// }).catch(error => {
+		// 	console.error("Error embedding dashboard:", error);
+		// });
 	</script>
 </body>

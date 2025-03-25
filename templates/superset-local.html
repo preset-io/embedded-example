@@ -1,0 +1,38 @@
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preset Test Embedded App</title>
+
+	<!-- Loading the Preset Embedded SDK from the CDN -->
+	<script src="https://unpkg.com/@superset-ui/embedded-sdk"></script>
+</head>
+
+<body>
+	<!-- Specifying the iframe size -->
+	<style>
+        iframe
+        {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+	
+	<!-- Creating a div that will be used by the SDK to embed the dashboard -->
+	<div id="dashboard-container"></div>
+	<script>
+
+		const myLightDashboard = supersetEmbeddedSdk.embedDashboard({
+			id: "79591f24-d88d-4829-876b-8b1926367e01",
+		  	supersetDomain: "http://localhost:9000",
+		  	mountPoint: document.getElementById("dashboard-container"), // any html element that can contain an iframe
+		  	fetchGuestToken: async () => "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJuYW1lIjoiYWRtaW4iLCJmaXJzdF9uYW1lIjoiVml0b3IiLCJsYXN0X25hbWUiOiJBdmlsYSJ9LCJyZXNvdXJjZXMiOlt7InR5cGUiOiJkYXNoYm9hcmQiLCJpZCI6Ijc5NTkxZjI0LWQ4OGQtNDgyOS04NzZiLThiMTkyNjM2N2UwMSJ9XSwicmxzX3J1bGVzIjpbXSwiaWF0IjoxNzM2NTQ3ODYxLjE3MjU0MywiZXhwIjoxNzY2NTQ3ODYxLjE3MjU0MywiYXVkIjoiaHR0cDovLzAuMC4wLjA6ODA4OC8iLCJ0eXBlIjoiZ3Vlc3QifQ.2OSyLzMg_1QuRiO-gG-avNdoIPFQMEb0tRiSm5sVQrk",
+		  	dashboardUiConfig: { // dashboard UI config: hideTitle, hideChartControls, filters (all optional)
+				hideTitle: false, // change it to `true` to hide the dashboard title
+				hideChartControls: false, // change it to `true` to hide the chart controls (ellipses menu)
+				filters: {
+					expanded: true, // change it to `false` so that dashboard filters are collapsed (for vertical filter bar)
+				},
+			}
+		});
+	</script>
+</body>
