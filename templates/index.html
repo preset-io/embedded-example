@@ -1,7 +1,7 @@
 <head>
-	<meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Preset Test Embedded App</title>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Preset Test Embedded App</title>
 
 	<!-- Loading the Preset Embedded SDK from the CDN -->
 	<script src="https://unpkg.com/@preset-sdk/embedded"></script>
@@ -10,23 +10,22 @@
 <body>
 	<!-- Specifying the iframe size -->
 	<style>
-        iframe
-        {
-            width: 100%;
-            height: 100%;
-        }
-    </style>
-	
+		iframe {
+			width: 100%;
+			height: 100%;
+		}
+	</style>
+
 	<!-- Creating a div that will be used by the SDK to embed the dashboard -->
 	<div id="dashboard-container"></div>
 	<script>
 		// 1. Request guest_token from our backend
 		async function fetchGuestTokenFromBackend() {
 			const authType = "{{ authType }}";
-			target_url = authType === "api" ? '/guest-token' : '/pem-key';
+			target_url = authType === "api" ? "/guest-token" : "/pem-key";
 			let response = await fetch(target_url);
-			let data = await response.json()
-			if (data["error"]){
+			let data = await response.json();
+			if (data["error"]) {
 				alert("ERROR: " + data.error);
 				return null;
 			}
@@ -42,7 +41,7 @@
 			supersetDomain: supersetDomain,
 			mountPoint: document.getElementById("dashboard-container"), // any html element that can contain an iframe
 			fetchGuestToken: async () => fetchGuestTokenFromBackend(),
-			dashboardUiConfig: { // dashboard UI config: hideTitle, hideChartControls, filters (all optional)
+			dashboardUiConfig: {
 				hideTitle: false, // change it to `true` to hide the dashboard title
 				hideChartControls: false, // change it to `true` to hide the chart controls (ellipses menu)
 				filters: {

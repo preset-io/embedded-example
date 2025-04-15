@@ -42,7 +42,7 @@ Make sure you have already enabled the **Embedded mode** for the dashboard you w
 
 ### Running the application
 
-1. Run `flask --app app run --port=8080 --debug` in the terminal (inside the root folder). This would start the Flask app. Feel free to change the `--port` value, but make sure you also update it in the [frontend code](https://github.com/preset-io/ce-embedded/blob/2b21e7f17e0136c5ddcd8097e32ce05c2205fbd9/templates/index.html#L25). The `--debug` flag ensures the server automatically reloads when changes are saved to the `app.py` file.
+1. Run `flask --app app run --port=8080 --debug` in the terminal (inside the root folder). This would start the Flask app. Feel free to change the `--port` accordingly in case `8080` is already in use. The `--debug` flag ensures the server automatically reloads when changes are saved to the `app.py` file.
 2. Access `http://127.0.0.1:8080/` on the browser. You should see an `iframe` in the full browser size, which would load the dashboard in embedded mode.
 
 ### Stopping the app
@@ -110,7 +110,7 @@ Then access `http://localhost:8081/?auth_type=pem` in the browser to load the em
 
 ### `dashboardUiConfig` parameters
 
-The Preset SDK has configurations that can be modified to change the embedding experience. These can be configured using the `dashboardUiConfig` parameter. In this test app, this configuration is currently implemented in the `templates/index.html` file ([line 44](https://github.com/preset-io/ce-embedded/blob/2b21e7f17e0136c5ddcd8097e32ce05c2205fbd9/templates/index.html#L44)):
+The Preset SDK has configurations that can be modified to change the embedding experience. These can be configured using the `dashboardUiConfig` parameter. In this test app, this configuration is currently implemented in the `templates/index.html` file ([line 40](https://github.com/preset-io/embedded-example/blob/master/templates/index.html#L40)):
 
 ```javascript
 const myLightDashboard = presetSdk.embedDashboard({
@@ -132,6 +132,78 @@ const myLightDashboard = presetSdk.embedDashboard({
   },
 });
 ```
+
+### Managing the dashboard filter state
+
+By default, a dashboard is loaded in Embedded mode with its default filter configuration. It's possible to pass a `permalink_key` to load the dashboard with a particular filter configuration:
+
+```javascript
+const myLightDashboard = presetSdk.embedDashboard({
+  id: dashboardId,
+  supersetDomain: supersetDomain,
+  mountPoint: document.getElementById("dashboard-container"),
+  fetchGuestToken: async () => fetchGuestTokenFromBackend(),
+  dashboardUiConfig: {
+    urlParams: {
+      "permalink_key": "aE6zJGOJK3k" // Key generated via the API with the desired filter state
+    }
+  }
+});
+```
+
+It's also possible to retrieve the current data mask configuration (which includes the filter state) at any time using the `getDataMask()` method:
+
+``` javascript
+const dashboardElement = await myLightDashboard; // `myLightDashboard` is a promise that resolves to the dashboard instance
+
+...
+
+const currentDataMaskConfig = await dashboardElement.getDataMask();
+console.log('The current data mask configuration for the dashboard is: ', datamask);
+```
+
+Alternatively, you can configure the dashboard to automatically emit data mask changes to a method. This is specially useful if you want to monitor filter usage:
+
+```javascript
+const myLightDashboard = presetSdk.embedDashboard({
+  id: dashboardId,
+  supersetDomain: supersetDomain,
+  mountPoint: document.getElementById("dashboard-container"),
+  fetchGuestToken: async () => fetchGuestTokenFromBackend(),
+  dashboardUiConfig: {
+    emitDataMasks: true, // When set to true, the dashboard emits filter state changes
+  }
+});
+
+function processDataMaskChange(dataMaskConfig) {
+  console.log("Received a data mask change from the dashboard:");
+  console.log(dataMaskConfig);
+}
+
+myLightDashboard.then(dashboardElement => {
+  dashboardElement.observeDataMask(processDataMaskChange);
+});
+```
+
+It's also possible to validate if the changes emitted were around native filters and/or cross-filters:
+
+``` javascript
+function processDataMaskChange(dataMaskConfig) {
+  console.log("Received a data mask change from the dashboard:");
+  if (dataMaskConfig.nativeFiltersChanged) {
+    console.log("Native filters have changed!");
+  }
+  if (dataMaskConfig.crossFiltersChanged) {
+    console.log("Cross filters have changed!");
+  }
+  console.log(dataMaskConfig);
+}
+
+myLightDashboard.then(dashboardElement => {
+  dashboardElement.observeDataMask(processDataMaskChange);
+});
+```
+
 
 ### Using a custom `iframeTitle`
 
@@ -177,21 +249,55 @@ const myLightDashboard = presetSdk.embedDashboard({
 
 ### Customizing the Guest Token permissions
 
-By default, the Guest Token is generated with **no RLS applied**, and access is only granted to the **Dashboard ID** specified previously. You can customize the Guest Token configuration in the `app.py` file ([line 104](https://github.com/preset-io/ce-embedded/blob/2b21e7f17e0136c5ddcd8097e32ce05c2205fbd9/app.py#L104)):
+By default, the Guest Token is generated with **no RLS applied**, and access is only granted to the **Dashboard ID** specified previously. You can customize the Guest Token configuration in the `app.py` file, according to the authentication method used:
+
+For guest tokens generated via the API ([line 207](https://github.com/preset-io/embedded-example/blob/master/app.py#L207)):
 
 ```python
-payload = json.dumps({
+{
     "user": {
         "username": "test_user",
         "first_name": "test",
         "last_name": "user"
     },
-    "resources": [{
-        "type": "dashboard",
-        "id": dashboard_id,
-    }],
+    "resources": [
+        {
+            "type": "dashboard",
+            "id": dashboard_id,
+        }
+    ],
     "rls": [
-        //Add RLS rules here
+        # Apply an RLS to a specific dataset
+        # { "dataset": dataset_id, "clause": "column = 'filter'" },
+        # Apply an RLS to all datasets
+        # { "clause": "column = 'filter'" },
     ]
-})
+}
+```
+
+For guest tokens generated using a PEM key ([line 254](https://github.com/preset-io/embedded-example/blob/master/app.py#L254)):
+
+
+``` python
+{
+    "user": {
+        "username": "test_user",
+        "first_name": "test",
+        "last_name": "user"
+    },
+    "resources": [
+        {
+            "type": "dashboard",
+            "id": dashboard_id
+        }
+    ],
+    "rls_rules": [
+        # Apply an RLS to a specific dataset
+        # { "dataset": dataset_id, "clause": "column = 'filter'" },
+        # Apply an RLS to all datasets
+        # { "clause": "column = 'filter'" },
+    ],
+    "type": "guest",
+    "aud": workspace_slug,
+}
 ```
