@@ -155,8 +155,10 @@ It's also possible to retrieve the current data mask configuration (which includ
 
 ``` javascript
 const dashboardElement = await myLightDashboard; // `myLightDashboard` is a promise that resolves to the dashboard instance
+
 ...
-const currentDataMaskConfig = await dash.dashboardElement();
+
+const currentDataMaskConfig = await dashboardElement.getDataMask();
 console.log('The current data mask configuration for the dashboard is: ', datamask);
 ```
 
