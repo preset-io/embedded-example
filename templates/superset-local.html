@@ -5,6 +5,9 @@
 
 	<!-- Loading the Preset Embedded SDK from the CDN -->
 	<script src="https://unpkg.com/@superset-ui/embedded-sdk"></script>
+
+	<!-- Load the SDK locally -->
+	<!-- <script src="http://127.0.0.1:8000/bundle/index.js"></script> -->
 </head>
 
 <body>
@@ -19,20 +22,38 @@
 	
 	<!-- Creating a div that will be used by the SDK to embed the dashboard -->
 	<div id="dashboard-container"></div>
+
+	<button id="datamask-button">Get Data Mask</button>
 	<script>
 
 		const myLightDashboard = supersetEmbeddedSdk.embedDashboard({
 			id: "79591f24-d88d-4829-876b-8b1926367e01",
 		  	supersetDomain: "http://localhost:9000",
-		  	mountPoint: document.getElementById("dashboard-container"), // any html element that can contain an iframe
-		  	fetchGuestToken: async () => "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJuYW1lIjoiYWRtaW4iLCJmaXJzdF9uYW1lIjoiVml0b3IiLCJsYXN0X25hbWUiOiJBdmlsYSJ9LCJyZXNvdXJjZXMiOlt7InR5cGUiOiJkYXNoYm9hcmQiLCJpZCI6Ijc5NTkxZjI0LWQ4OGQtNDgyOS04NzZiLThiMTkyNjM2N2UwMSJ9XSwicmxzX3J1bGVzIjpbXSwiaWF0IjoxNzM2NTQ3ODYxLjE3MjU0MywiZXhwIjoxNzY2NTQ3ODYxLjE3MjU0MywiYXVkIjoiaHR0cDovLzAuMC4wLjA6ODA4OC8iLCJ0eXBlIjoiZ3Vlc3QifQ.2OSyLzMg_1QuRiO-gG-avNdoIPFQMEb0tRiSm5sVQrk",
-		  	dashboardUiConfig: { // dashboard UI config: hideTitle, hideChartControls, filters (all optional)
-				hideTitle: false, // change it to `true` to hide the dashboard title
-				hideChartControls: false, // change it to `true` to hide the chart controls (ellipses menu)
+		  	mountPoint: document.getElementById("dashboard-container"),
+		  	fetchGuestToken: async () => "",
+		  	dashboardUiConfig: {
+				hideTitle: false,
+				hideChartControls: false,
 				filters: {
-					expanded: true, // change it to `false` so that dashboard filters are collapsed (for vertical filter bar)
+					expanded: true,
 				},
-			}
+				// urlParams: {
+				// 	// "native_filters_key": "_9K5Pi2in5uZnHYwvBfP_jOSZpRohbQjJCsFe-jie_mRHjwRAGboqjsroZa-IUbS"
+				// 	"permalink_key": "aE6zJGOJK3k"
+				// },
+				// emitDataMasks: true,
+			},
+			// referrerPolicy: "no-referrer",
+		});
+		myLightDashboard.then(myLightDashboard => {
+			myLightDashboard.observeDataMask(logChanges);
+			console.log("Getting current config");
+		});
+
+		document.getElementById("datamask-button").addEventListener("click", async () => {
+			const dash = await myLightDashboard;
+			const datamask = await dash.getDataMask();
+			console.log('datamask', datamask);
 		});
 	</script>
 </body>
