@@ -183,6 +183,26 @@ myLightDashboard.then(dashboardElement => {
 });
 ```
 
+It's also possible to validate if the changes emitted were around native filters and/or cross-filters:
+
+``` javascript
+function processDataMaskChange(dataMaskConfig) {
+  console.log("Received a data mask change from the dashboard:");
+  if (dataMaskConfig.nativeFiltersChanged) {
+    console.log("Native filters have changed!");
+  }
+  if (dataMaskConfig.crossFiltersChanged) {
+    console.log("Cross filters have changed!");
+  }
+  console.log(dataMaskConfig);
+}
+
+myLightDashboard.then(dashboardElement => {
+  dashboardElement.observeDataMask(processDataMaskChange);
+});
+```
+
+
 ### Using a custom `iframeTitle`
 
 By default, the `iframe` element is created with its title set to `Embedded Dashboard`. It's possible to specify a custom title through the `iframeTitle` parameter:
