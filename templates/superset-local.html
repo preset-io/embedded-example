@@ -1,59 +1,81 @@
 <head>
 	<meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Preset Test Embedded App</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Preset Test Embedded App</title>
 
-	<!-- Loading the Preset Embedded SDK from the CDN -->
-	<script src="https://unpkg.com/@superset-ui/embedded-sdk"></script>
-
-	<!-- Load the SDK locally -->
+	<!-- Loading the Embedded SDK-->
+	<script src="https://unpkg.com/@preset-sdk/embedded"></script>
+	<!-- <script src="https://unpkg.com/@superset-ui/embedded-sdk"></script> -->
 	<!-- <script src="http://127.0.0.1:8000/bundle/index.js"></script> -->
 </head>
 
 <body>
-	<!-- Specifying the iframe size -->
 	<style>
-        iframe
-        {
-            width: 100%;
-            height: 100%;
-        }
-    </style>
-	
-	<!-- Creating a div that will be used by the SDK to embed the dashboard -->
-	<div id="dashboard-container"></div>
-
+		iframe {
+			width: 100%;
+			height: 100%;
+		}
+	</style>
 	<button id="datamask-button">Get Data Mask</button>
+	<div id="dashboard-container"></div>
 	<script>
+		async function fetchGuestTokenFromBackend() {
+			const authType = "{{ authType }}";
+			target_url = authType === "api" ? '/guest-token' : '/pem-key';
+			let response = await fetch(target_url);
+			let data = await response.json()
+			if (data["error"]) {
+				alert("ERROR: " + data.error);
+				return null;
+			}
+			return data;
+		}
 
-		const myLightDashboard = supersetEmbeddedSdk.embedDashboard({
-			id: "79591f24-d88d-4829-876b-8b1926367e01",
-		  	supersetDomain: "http://localhost:9000",
-		  	mountPoint: document.getElementById("dashboard-container"),
-		  	fetchGuestToken: async () => "",
-		  	dashboardUiConfig: {
+		function processDataMaskChange(dataMaskConfig) {
+			console.log("Received a data mask change from the dashboard:");
+			if (dataMaskConfig.nativeFiltersChanged) {
+				console.log("Native filters have changed");
+			}
+			if (dataMaskConfig.crossFiltersChanged) {
+				console.log("Cross filters have changed");
+			}
+			console.log(dataMaskConfig);
+		}
+
+		const dashboardId = "{{ dashboardId }}";
+		const supersetDomain = "{{ supersetDomain }}";
+
+		// const myLightDashboard = supersetEmbeddedSdk.embedDashboard({
+		const myLightDashboard = presetSdk.embedDashboard({
+			id: dashboardId,
+			supersetDomain: supersetDomain,
+			fetchGuestToken: async () => fetchGuestTokenFromBackend(),
+			// id: "79591f24-d88d-4829-876b-8b1926367e01",
+			// supersetDomain: "http://localhost:9000",
+			// fetchGuestToken: async () => "",
+			mountPoint: document.getElementById("dashboard-container"),
+			dashboardUiConfig: {
 				hideTitle: false,
 				hideChartControls: false,
 				filters: {
 					expanded: true,
 				},
 				// urlParams: {
-				// 	// "native_filters_key": "_9K5Pi2in5uZnHYwvBfP_jOSZpRohbQjJCsFe-jie_mRHjwRAGboqjsroZa-IUbS"
 				// 	"permalink_key": "aE6zJGOJK3k"
 				// },
 				// emitDataMasks: true,
 			},
 			// referrerPolicy: "no-referrer",
 		});
-		myLightDashboard.then(myLightDashboard => {
-			myLightDashboard.observeDataMask(logChanges);
-			console.log("Getting current config");
+
+		myLightDashboard.then(dashboardElement => {
+			dashboardElement.observeDataMask(processDataMaskChange);
 		});
 
 		document.getElementById("datamask-button").addEventListener("click", async () => {
-			const dash = await myLightDashboard;
-			const datamask = await dash.getDataMask();
-			console.log('datamask', datamask);
+			const dashboardElement = await myLightDashboard;
+			const currentDataMaskConfig = await dashboardElement.getDataMask();
+			console.log('datamask', currentDataMaskConfig);
 		});
 	</script>
 </body>

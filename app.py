@@ -135,7 +135,7 @@ def main_page():
         if app.config["KEY_ID"] is None:
             raise KeyError("Key ID not defined in environment variables.")
         return render_template(
-            "index.html",
+            "superset-local.html",
             dashboardId=app.config["DASHBOARD_ID"],
             supersetDomain=app.config["SUPERSET_DOMAIN"],
             authType=auth_type,
@@ -143,7 +143,7 @@ def main_page():
 
     # Default to API key auth
     return render_template(
-        "index.html",
+        "superset-local.html",
         dashboardId=app.config["DASHBOARD_ID"],
         supersetDomain=app.config["SUPERSET_DOMAIN"],
         authType="api",
