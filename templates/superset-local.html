@@ -4,8 +4,8 @@
 	<title>Preset Test Embedded App</title>
 
 	<!-- Loading the Embedded SDK-->
-	<script src="https://unpkg.com/@preset-sdk/embedded"></script>
-	<!-- <script src="https://unpkg.com/@superset-ui/embedded-sdk"></script> -->
+	 <script src="https://unpkg.com/@superset-ui/embedded-sdk"></script>
+	<!-- <script src="https://unpkg.com/@preset-sdk/embedded"></script> -->
 	<!-- <script src="http://127.0.0.1:8000/bundle/index.js"></script> -->
 </head>
 
@@ -21,7 +21,7 @@
 	<script>
 		async function fetchGuestTokenFromBackend() {
 			const authType = "{{ authType }}";
-			target_url = authType === "api" ? '/guest-token' : '/pem-key';
+			target_url = '/local-guest-token';
 			let response = await fetch(target_url);
 			let data = await response.json()
 			if (data["error"]) {
@@ -45,25 +45,25 @@
 		const dashboardId = "{{ dashboardId }}";
 		const supersetDomain = "{{ supersetDomain }}";
 
-		// const myLightDashboard = supersetEmbeddedSdk.embedDashboard({
-		const myLightDashboard = presetSdk.embedDashboard({
+		console.log("dashboardId", dashboardId);
+		console.log("supersetDomain", supersetDomain);
+
+		const myLightDashboard = supersetEmbeddedSdk.embedDashboard({
 			id: dashboardId,
 			supersetDomain: supersetDomain,
 			fetchGuestToken: async () => fetchGuestTokenFromBackend(),
-			// id: "79591f24-d88d-4829-876b-8b1926367e01",
-			// supersetDomain: "http://localhost:9000",
-			// fetchGuestToken: async () => "",
 			mountPoint: document.getElementById("dashboard-container"),
 			dashboardUiConfig: {
 				hideTitle: false,
 				hideChartControls: false,
 				filters: {
-					expanded: true,
+					visible: false,
 				},
 				// urlParams: {
 				// 	"permalink_key": "aE6zJGOJK3k"
 				// },
 				// emitDataMasks: true,
+				showRowLimitWarning: false,
 			},
 			// referrerPolicy: "no-referrer",
 		});

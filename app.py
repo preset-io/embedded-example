@@ -32,7 +32,10 @@ app.config.from_mapping(
         "PRESET_TEAM": os.environ.get("PRESET_TEAM"),
         "WORKSPACE_SLUG": os.environ.get("WORKSPACE_SLUG"),
         "PRESET_BASE_URL": URL("https://api.app.preset.io/"),
+        # "PRESET_BASE_URL": URL("http://manager.local.preset.zone/"),
         "KEY_ID": os.environ.get("KEY_ID"),
+        "SUPERSET_LOCAL_URL": os.environ.get("SUPERSET_LOCAL_URL"),
+        "LOCAL_DASHBOARD": os.environ.get("LOCAL_DASHBOARD"),
     },
 )
 
@@ -135,7 +138,7 @@ def main_page():
         if app.config["KEY_ID"] is None:
             raise KeyError("Key ID not defined in environment variables.")
         return render_template(
-            "superset-local.html",
+            "index.html",
             dashboardId=app.config["DASHBOARD_ID"],
             supersetDomain=app.config["SUPERSET_DOMAIN"],
             authType=auth_type,
@@ -143,7 +146,7 @@ def main_page():
 
     # Default to API key auth
     return render_template(
-        "superset-local.html",
+        "index.html",
         dashboardId=app.config["DASHBOARD_ID"],
         supersetDomain=app.config["SUPERSET_DOMAIN"],
         authType="api",
@@ -157,11 +160,13 @@ def local_page():
     """
     return render_template(
         "superset-local.html",
+        dashboardId=app.config["LOCAL_DASHBOARD"],
+        supersetDomain=app.config["SUPERSET_LOCAL_URL"],
     )
 
 
 @app.route("/guest-token", methods=["GET"])
-def guest_token_generator():
+def local_guest_token_generator():
     """
     Route used by frontend to retrieve a Guest Token.
     """
@@ -173,11 +178,102 @@ def guest_token_generator():
         return jsonify({"error": str(error)}), 500
 
 
+@app.route("/local-guest-token", methods=["GET"])
+def guest_token_generator():
+    """
+    Route used by frontend to retrieve a Guest Token.
+    """
+    try:
+        jwt_token = authenticate_with_superset()
+        guest_token = jsonify(fetch_superset_guest_token(jwt_token))
+        return guest_token, 200
+    except requests.exceptions.HTTPError as error:
+        return jsonify({"error": str(error)}), 500
+
+
+def authenticate_with_superset():
+    """
+    Authenticate with Superset to generate a JWT token.
+    """
+    url = "http://127.0.01:8088/api/v1/security/login"
+    payload = {
+        "username": "1",
+        "password": "1",
+        "provider": "db",
+        "refresh": True,
+    }
+    headers = {"Content-Type": "application/json", "Accept": "application/json"}
+    try:
+        response = requests.post(
+            url,
+            headers=headers,
+            json=payload,
+            timeout=7,
+        )
+        response.raise_for_status()
+        return response.json()["access_token"]
+    except requests.exceptions.HTTPError as http_error:
+        error_msg = http_error.response.text
+        logging.error(
+            "\nERROR: Unable to generate a JWT token.\nError details: %s",
+            error_msg,
+        )
+        raise requests.exceptions.HTTPError(
+            "Unable to generate a JWT token. "
+            "Please make sure the data is accurate.",
+        )
+
+
+def fetch_superset_guest_token(jwt_key):
+    """
+    Fetch and return a Guest Token for the embedded dashboard in Superset.
+    """
+    url = "http://localhost:8088/api/v1/security/guest_token/"
+    payload = {
+        "user": {"username": "test_user", "first_name": "test", "last_name": "user"},
+        "resources": [{"type": "dashboard", "id": app.config["LOCAL_DASHBOARD"]}],
+        "rls": [
+            # Apply an RLS to a specific dataset
+            # { "dataset": dataset_id, "clause": "column = 'filter'" },
+            # Apply an RLS to all datasets
+            { "clause": "'abc'='abc' /* Applied to all datasets*/" },
+            { "dataset": 52, "clause": "'ccc'='ccc' /* Applied to this one*/" },
+        ],
+    }
+
+    headers = {
+        "Authorization": f"Bearer {jwt_key}",
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        response = requests.post(
+            url,
+            headers=headers,
+            json=payload,
+            timeout=7,
+        )
+        response.raise_for_status()
+        return response.json()["token"]
+    except requests.exceptions.HTTPError as http_error:
+        error_msg = http_error.response.text
+        logging.error(
+            "\nERROR: Unable to fetch a Guest Token.\nError details: %s",
+            error_msg,
+        )
+        raise requests.exceptions.HTTPError(
+            "Unable to generate a Guest token. "
+            "Please make sure the API key has admin access and the payload is correct.",
+        )
+
+
 def authenticate_with_preset():
     """
     Authenticate with the Preset API to generate a JWT token.
     """
     url = app.config["PRESET_BASE_URL"] / "v1/auth/"
+    # url = app.config["PRESET_BASE_URL"] / "api/v1/auth/"
     payload = {"name": app.config["API_TOKEN"], "secret": app.config["API_SECRET"]}
     headers = {"Content-Type": "application/json", "Accept": "application/json"}
 
@@ -209,6 +305,7 @@ def fetch_guest_token(jwt_key):
     url = (
         app.config["PRESET_BASE_URL"]
         / "v1/teams"
+        # / "api/v1/teams"
         / app.config["PRESET_TEAM"]
         / "workspaces"
         / app.config["WORKSPACE_SLUG"]
@@ -221,8 +318,9 @@ def fetch_guest_token(jwt_key):
             # Apply an RLS to a specific dataset
             # { "dataset": dataset_id, "clause": "column = 'filter'" },
             # Apply an RLS to all datasets
-            # { "clause": "column = 'filter'" },
+            # { "clause": "product_line = 'Classic Cars'" },
         ],
+        # "enable_d2d": True,
     }
 
     headers = {
@@ -262,7 +360,7 @@ def get_guest_token_using_pem_key():
 
     # Payload to encode
     payload = {
-        "user": {"username": "embedded_username", "first_name": "test", "last_name": "user"},
+        "user": {"username": "embedded_username", "first_name": "", "last_name": ""},
         "resources": [{"type": "dashboard", "id": app.config["DASHBOARD_ID"]}],
         "rls_rules": [
             # Apply an RLS to a specific dataset

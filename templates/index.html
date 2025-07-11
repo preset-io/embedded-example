@@ -51,9 +51,20 @@
 				hideChartControls: false, // change it to `true` to hide the chart controls (ellipses menu)
 				filters: {
 					expanded: true, // change it to `false` so that dashboard filters are collapsed (for vertical filter bar)
+					visible: false,
 				},
+				emitDataMasks: true
 			},
 			iframeTitle: "Custom title",
+		});
+
+		function processDataMaskChange(dataMaskConfig) {
+			console.log("Received a data mask change from the dashboard:");
+			console.log(dataMaskConfig);
+		}
+
+		myLightDashboard.then(dashboardElement => {
+			dashboardElement.observeDataMask(processDataMaskChange);
 		});
 	</script>
 </body>
