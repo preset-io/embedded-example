@@ -119,17 +119,36 @@ const myLightDashboard = presetSdk.embedDashboard({
   mountPoint: document.getElementById("dashboard-container"),
   fetchGuestToken: async () => fetchGuestTokenFromBackend(),
   dashboardUiConfig: {
-    // dashboard UI config: hideTitle, hideChartControls (optional)
+    // dashboard UI config (all optional)
     hideTitle: false, // change it to `true` to hide the dashboard title
     hideChartControls: false, // change it to `true` to hide the chart controls (ellipses menu)
     filters: {
       expanded: true, // change it to `false` so that dashboard filters are collapsed (for vertical filter bar)
+      visible: true, // change it to `falee` to completely hide the dashboard filter bar
     },
     urlParams: { // URL parameters to be used with the ``{{url_param()}}`` Jinja macro
       param_name: "value",
       other_param: "value",
-    }
+    },
+    showRowLimitWarning: false, // change it to `true` to show the row limit reached warning on charts
   },
+});
+```
+
+### Force refreshing the dashboard on load
+The dashboard might load with cached data (if available for the chart, filter and RLS combination). You can pass a URL parameter to force refresh the data:
+
+```javascript
+const myLightDashboard = presetSdk.embedDashboard({
+  id: dashboardId,
+  supersetDomain: supersetDomain,
+  mountPoint: document.getElementById("dashboard-container"),
+  fetchGuestToken: async () => fetchGuestTokenFromBackend(),
+  dashboardUiConfig: {
+    urlParams: {
+      "force": true,
+    }
+  }
 });
 ```
 
