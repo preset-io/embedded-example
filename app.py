@@ -10,41 +10,20 @@ import subprocess
 import click
 import jwt
 import requests
-from dotenv import load_dotenv
+
+from config import config
 from flask import Flask, jsonify, render_template, request
-from yarl import URL
-
-load_dotenv()
-
-app = Flask(__name__)
 
 
-KEY_DIR = "keys"
-PRIVATE_KEY_PATH = os.path.join(KEY_DIR, "embedded-example-private-key.pem")
-PUBLIC_KEY_PATH = os.path.join(KEY_DIR, "embedded-example-public-key.pem")
+def create_app(config_name=None):
+    app = Flask(__name__)
+    env = config_name or "production"
+    app.config.from_object(config[env])
+    app.config["ENV"] = env
 
-app.config.from_mapping(
-    {
-        "API_TOKEN": os.environ.get("API_TOKEN"),
-        "API_SECRET": os.environ.get("API_SECRET"),
-        "DASHBOARD_ID": os.environ.get("DASHBOARD_ID"),
-        "SUPERSET_DOMAIN": os.environ.get("SUPERSET_DOMAIN"),
-        "PRESET_TEAM": os.environ.get("PRESET_TEAM"),
-        "WORKSPACE_SLUG": os.environ.get("WORKSPACE_SLUG"),
-        "PRESET_BASE_URL": URL("https://api.app.preset.io/"),
-        # "PRESET_BASE_URL": URL("http://manager.local.preset.zone/"),
-        "KEY_ID": os.environ.get("KEY_ID"),
-        "SUPERSET_LOCAL_URL": os.environ.get("SUPERSET_LOCAL_URL"),
-        "LOCAL_DASHBOARD": os.environ.get("LOCAL_DASHBOARD"),
-    },
-)
+    return app
 
-# Configure logging
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s:%(levelname)s:%(message)s",
-    handlers=[logging.StreamHandler()],
-)
+app = create_app(os.environ.get('FLASK_CONFIG'))
 
 
 # CLI command to generate public/private PEM keys
@@ -76,12 +55,12 @@ def generate_keys(overwrite=False):
         ) from exc
 
     # Ensure the output directory exists
-    if not os.path.exists(KEY_DIR):
-        os.makedirs(KEY_DIR)
+    if not os.path.exists(app.config["KEY_DIR"]):
+        os.makedirs(app.config["KEY_DIR"])
 
     # Check if the files already exist
     if (
-        os.path.exists(PRIVATE_KEY_PATH) or os.path.exists(PUBLIC_KEY_PATH)
+        os.path.exists(app.config["PRIVATE_KEY_PATH"]) or os.path.exists(app.config["PUBLIC_KEY_PATH"])
     ) and not overwrite:
         raise Exception(  # pylint: disable=broad-exception-raised
             "Key files already exist. Use --overwrite to overwrite the existing files.",
@@ -97,13 +76,13 @@ def generate_keys(overwrite=False):
                 "-algorithm",
                 "RSA",
                 "-out",
-                PRIVATE_KEY_PATH,
+                app.config["PRIVATE_KEY_PATH"],
                 "-pkeyopt",
                 "rsa_keygen_bits:2048",
             ],
             check=True,
         )
-        print(f"Private key generated at: {PRIVATE_KEY_PATH}")
+        print(f"Private key generated at: {app.config['PRIVATE_KEY_PATH']}")
     except subprocess.CalledProcessError as exc:
         raise RuntimeError(f"Failed to generate private key: {exc}") from exc
 
@@ -115,13 +94,13 @@ def generate_keys(overwrite=False):
                 "rsa",
                 "-pubout",
                 "-in",
-                PRIVATE_KEY_PATH,
+                app.config["PRIVATE_KEY_PATH"],
                 "-out",
-                PUBLIC_KEY_PATH,
+                app.config["PUBLIC_KEY_PATH"],
             ],
             check=True,
         )
-        print(f"Public key generated at: {PUBLIC_KEY_PATH}")
+        print(f"Public key generated at: {app.config['PUBLIC_KEY_PATH']}")
     except subprocess.CalledProcessError as exc:
         raise RuntimeError(f"Failed to generate private key: {exc}") from exc
 
@@ -133,35 +112,17 @@ def main_page():
     """
     auth_type = request.args.get("auth_type", "api")
     if auth_type == "pem":
-        if not os.path.exists(PRIVATE_KEY_PATH) or not os.path.exists(PUBLIC_KEY_PATH):
+        if not os.path.exists(app.config["PRIVATE_KEY_PATH"]) or not os.path.exists(app.config["PUBLIC_KEY_PATH"]):
             raise FileNotFoundError("PEM key files not found.")
         if app.config["KEY_ID"] is None:
             raise KeyError("Key ID not defined in environment variables.")
-        return render_template(
-            "index.html",
-            dashboardId=app.config["DASHBOARD_ID"],
-            supersetDomain=app.config["SUPERSET_DOMAIN"],
-            authType=auth_type,
-        )
 
-    # Default to API key auth
     return render_template(
         "index.html",
-        dashboardId=app.config["DASHBOARD_ID"],
-        supersetDomain=app.config["SUPERSET_DOMAIN"],
-        authType="api",
-    )
-
-
-@app.route("/local")
-def local_page():
-    """
-    Default route to load index.html (loads the Embedded SDK).
-    """
-    return render_template(
-        "superset-local.html",
-        dashboardId=app.config["LOCAL_DASHBOARD"],
-        supersetDomain=app.config["SUPERSET_LOCAL_URL"],
+        dashboard_id=app.config["DASHBOARD_ID"],
+        superset_domain=app.config["SUPERSET_DOMAIN"],
+        auth_type=auth_type,
+        env=app.config["ENV"],
     )
 
 
@@ -171,21 +132,16 @@ def local_guest_token_generator():
     Route used by frontend to retrieve a Guest Token.
     """
     try:
-        jwt_token = authenticate_with_preset()
-        guest_token = jsonify(fetch_guest_token(jwt_token))
-        return guest_token, 200
-    except requests.exceptions.HTTPError as error:
-        return jsonify({"error": str(error)}), 500
-
-
-@app.route("/local-guest-token", methods=["GET"])
-def guest_token_generator():
-    """
-    Route used by frontend to retrieve a Guest Token.
-    """
-    try:
-        jwt_token = authenticate_with_superset()
-        guest_token = jsonify(fetch_superset_guest_token(jwt_token))
+        jwt_token = (
+            authenticate_with_preset()
+            if app.config["ENV"] != "development"
+            else authenticate_with_superset()
+        )
+        guest_token = (
+            jsonify(fetch_guest_token(jwt_token))
+            if app.config["ENV"] != "development"
+            else jsonify(fetch_superset_guest_token(jwt_token))
+        )
         return guest_token, 200
     except requests.exceptions.HTTPError as error:
         return jsonify({"error": str(error)}), 500
@@ -231,13 +187,13 @@ def fetch_superset_guest_token(jwt_key):
     url = "http://localhost:8088/api/v1/security/guest_token/"
     payload = {
         "user": {"username": "test_user", "first_name": "test", "last_name": "user"},
-        "resources": [{"type": "dashboard", "id": app.config["LOCAL_DASHBOARD"]}],
+        "resources": [{"type": "dashboard", "id": app.config["DASHBOARD_ID"]}],
         "rls": [
             # Apply an RLS to a specific dataset
             # { "dataset": dataset_id, "clause": "column = 'filter'" },
             # Apply an RLS to all datasets
-            { "clause": "'abc'='abc' /* Applied to all datasets*/" },
-            { "dataset": 52, "clause": "'ccc'='ccc' /* Applied to this one*/" },
+            # { "clause": "year=2003 /* Applied to all datasets*/" },
+            # { "dataset": 23, "clause": "month=3 /* Applied to this one*/" },
         ],
     }
 
@@ -272,8 +228,7 @@ def authenticate_with_preset():
     """
     Authenticate with the Preset API to generate a JWT token.
     """
-    url = app.config["PRESET_BASE_URL"] / "v1/auth/"
-    # url = app.config["PRESET_BASE_URL"] / "api/v1/auth/"
+    url = app.config["PRESET_BASE_URL"] / "api/v1/auth/"
     payload = {"name": app.config["API_TOKEN"], "secret": app.config["API_SECRET"]}
     headers = {"Content-Type": "application/json", "Accept": "application/json"}
 
@@ -304,9 +259,8 @@ def fetch_guest_token(jwt_key):
     """
     url = (
         app.config["PRESET_BASE_URL"]
-        / "v1/teams"
-        # / "api/v1/teams"
-        / app.config["PRESET_TEAM"]
+        / "api/v1/teams"
+        / app.config["PRESET_TEAM_ID"]
         / "workspaces"
         / app.config["WORKSPACE_SLUG"]
         / "guest-token/"
@@ -318,9 +272,9 @@ def fetch_guest_token(jwt_key):
             # Apply an RLS to a specific dataset
             # { "dataset": dataset_id, "clause": "column = 'filter'" },
             # Apply an RLS to all datasets
-            # { "clause": "product_line = 'Classic Cars'" },
+            { "clause": "country = 'USA'" },
         ],
-        # "enable_d2d": True,
+        # "enable_drilling": True,
     }
 
     headers = {
@@ -355,7 +309,7 @@ def get_guest_token_using_pem_key():
     """
     Encode and return a Guest Token for the embedded dashboard.
     """
-    with open(PRIVATE_KEY_PATH, "r", encoding="utf-8") as file:
+    with open(app.config["PRIVATE_KEY_PATH"], "r", encoding="utf-8") as file:
         private_key = file.read()
 
     # Payload to encode

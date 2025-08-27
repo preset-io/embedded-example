@@ -5,6 +5,10 @@
 
 	<!-- Loading the Preset Embedded SDK from the CDN -->
 	<script src="https://unpkg.com/@preset-sdk/embedded"></script>
+	<!-- Load the Superset Embedded SDK from the CDN -->
+	<script src="https://unpkg.com/@superset-ui/embedded-sdk"></script>
+	<!-- Load the SDK lcocally -->
+	 <!-- <script src="http://127.0.0.1:8000/bundle/index.js"></script> -->
 </head>
 
 <body>
@@ -17,11 +21,14 @@
 	</style>
 
 	<!-- Creating a div that will be used by the SDK to embed the dashboard -->
+	<!-- <button id="datamask-button">Get Data Mask</button> -->
 	<div id="dashboard-container"></div>
 	<script>
+		const env = "{{ env }}";
+
 		// 1. Request guest_token from our backend
 		async function fetchGuestTokenFromBackend() {
-			const authType = "{{ authType }}";
+			const authType = "{{ auth_type }}";
 			target_url = authType === "api" ? "/guest-token" : "/pem-key";
 			let response = await fetch(target_url);
 			let data = await response.json();
@@ -38,10 +45,11 @@
 		}
 
 		// 2. Uses Preset Embedded SDK to embed the dashboard as an iFrame
-		const dashboardId = "{{ dashboardId }}";
-		const supersetDomain = "{{ supersetDomain }}";
+		const dashboardId = "{{ dashboard_id }}";
+		const supersetDomain = "{{ superset_domain }}";
+		const sdk = env === "production" ? presetSdk : supersetEmbeddedSdk;
 
-		const myLightDashboard = presetSdk.embedDashboard({
+		const myLightDashboard = sdk.embedDashboard({
 			id: dashboardId,
 			supersetDomain: supersetDomain,
 			mountPoint: document.getElementById("dashboard-container"), // any html element that can contain an iframe
@@ -49,10 +57,10 @@
 			dashboardUiConfig: {
 				hideTitle: false, // change it to `true` to hide the dashboard title
 				hideChartControls: false, // change it to `true` to hide the chart controls (ellipses menu)
-				filters: {
-					expanded: true, // change it to `false` so that dashboard filters are collapsed (for vertical filter bar)
-					visible: false,
-				},
+				// filters: {
+				// 	expanded: true, // change it to `false` so that dashboard filters are collapsed (for vertical filter bar)
+				// 	visible: false,
+				// },
 				emitDataMasks: true
 			},
 			iframeTitle: "Custom title",
@@ -65,6 +73,12 @@
 
 		myLightDashboard.then(dashboardElement => {
 			dashboardElement.observeDataMask(processDataMaskChange);
+		});
+
+		document.getElementById("datamask-button").addEventListener("click", async () => {
+			const dashboardElement = await myLightDashboard;
+			const currentDataMaskConfig = await dashboardElement.getDataMask();
+			console.log('datamask', currentDataMaskConfig);
 		});
 	</script>
 </body>
