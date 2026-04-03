@@ -10,6 +10,7 @@ import subprocess
 import click
 import jwt
 import requests
+from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
 from yarl import URL
@@ -213,6 +214,7 @@ def fetch_guest_token(jwt_key):
             # Apply an RLS to all datasets
             # { "clause": "column = 'filter'" },
         ],
+        "enable_drilling": False,
     }
 
     headers = {
@@ -262,6 +264,8 @@ def get_guest_token_using_pem_key():
         ],
         "type": "guest",
         "aud": app.config["WORKSPACE_SLUG"],
+        "enable_drilling": False,
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=5),
     }
 
     encoded_jwt = jwt.encode(
