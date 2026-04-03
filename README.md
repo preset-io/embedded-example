@@ -268,7 +268,7 @@ const myLightDashboard = presetSdk.embedDashboard({
 
 ### Customizing the Guest Token permissions
 
-By default, the Guest Token is generated with **no RLS applied**, and access is only granted to the **Dashboard ID** specified previously. You can customize the Guest Token configuration in the `app.py` file, according to the authentication method used:
+By default, the Guest Token is generated with **no RLS applied, drilling disabled, and only access to the Dashboard ID specified previously**. You can customize the Guest Token configuration in the `app.py` file to enable drilling, grant access to multiple dashboards and apply RLS according to the authentication method used:
 
 For guest tokens generated via the API ([line 207](https://github.com/preset-io/embedded-example/blob/master/app.py#L207)):
 
@@ -290,7 +290,8 @@ For guest tokens generated via the API ([line 207](https://github.com/preset-io/
         # { "dataset": dataset_id, "clause": "column = 'filter'" },
         # Apply an RLS to all datasets
         # { "clause": "column = 'filter'" },
-    ]
+    ],
+    "enable_drilling": False, # Set it to True to enable D2D actions
 }
 ```
 
@@ -318,5 +319,9 @@ For guest tokens generated using a PEM key ([line 254](https://github.com/preset
     ],
     "type": "guest",
     "aud": workspace_slug,
+    "enable_drilling": False, # Set it to True to enable D2D actions
+    "exp": datetime.now(timezone.utc) + timedelta(minutes=5),
 }
 ```
+
+Specifically for tokens encoded locally using a PEM key, it's possible to control the token expiration via the `exp` property. The SDK adapts automatically to this configuration, refreshing the token as needed by calling `fetchGuestToken`. **Note that encoding the token locally without an `exp` value would result in Guest Tokens that are valid forever**.
