@@ -152,6 +152,47 @@ const myLightDashboard = presetSdk.embedDashboard({
 });
 ```
 
+### Setting the dashboard theme mode
+
+By default, an embedded dashboard renders using the Workspace default theme. You can specify which theme mode should be used by passing the `themeMode` URL parameter:
+
+```javascript
+const myLightDashboard = presetSdk.embedDashboard({
+  id: dashboardId,
+  supersetDomain: supersetDomain,
+  mountPoint: document.getElementById("dashboard-container"),
+  fetchGuestToken: async () => fetchGuestTokenFromBackend(),
+  dashboardUiConfig: {
+    urlParams: {
+      "themeMode": "dark", // "default", "dark" or "system"
+    }
+  }
+});
+```
+
+The accepted values are:
+* `default`: uses the Workspace default theme.
+* `dark`: renders the dashboard in dark mode.
+* `system`: follows the operating system preference of the user viewing the dashboard.
+
+The theme mode is applied while the dashboard loads, so the dashboard doesn't render in one mode and then switch to another.
+
+If your application has its own light/dark preference, pass `default` or `dark` explicitly based on that preference rather than using `system`. The `system` value follows the operating system setting, which can differ from the mode your application is currently displaying.
+
+#### Changing the theme mode after the dashboard has loaded
+
+It's also possible to change the theme mode after the dashboard has loaded, by calling the `setThemeMode()` method on the resolved dashboard instance. This is useful if your application allows users to switch between light and dark without reloading the page:
+
+``` javascript
+const dashboardElement = await myLightDashboard; // `myLightDashboard` is a promise that resolves to the dashboard instance
+
+...
+
+dashboardElement.setThemeMode("dark"); // "default", "dark" or "system"
+```
+
+Note that `setThemeMode()` can only take effect after the embedded application has loaded. Use the `themeMode` URL parameter to control which mode the dashboard renders in initially, and `setThemeMode()` for changes afterwards. The two can be combined.
+
 ### Managing the dashboard filter state
 
 By default, a dashboard is loaded in Embedded mode with its default filter configuration. It's possible to pass a `permalink_key` to load the dashboard with a particular filter configuration:
