@@ -264,6 +264,43 @@ myLightDashboard.then(dashboardElement => {
 });
 ```
 
+### Retrieving the chart-level state
+
+In addition to the dashboard's filter state (the data mask), it's possible to retrieve the current state of the charts rendered in the dashboard using the `getChartStates()` method:
+
+``` javascript
+const dashboardElement = await myLightDashboard; // `myLightDashboard` is a promise that resolves to the dashboard instance
+
+...
+
+const currentChartStates = await dashboardElement.getChartStates();
+console.log('The current chart states for the dashboard are: ', currentChartStates);
+```
+
+This is useful when you need to capture the chart state for Interactive Tables (column configuration, filtering, etc).
+
+### Generating a permalink from the current state
+
+Combining the outputs of `getChartStates()` and `getDataMask()`, it's possible to generate a permalink for the dashboard's current state (the same kind of permalink produced by the "Copy permalink to clipboard" option in the Preset UI). This permalink `key` can later be passed back to the SDK through the `permalink_key` URL parameter (see [Managing the dashboard filter state](#managing-the-dashboard-filter-state) above) to reload the dashboard with that exact state.
+
+Permalinks are created by calling the [Create a Dashboard Permalink](https://api-docs.preset.io/#64b92df5-16b5-47a4-b02a-2af7e24071f0) API endpoint.
+
+``` javascript
+const dashboardElement = await myLightDashboard;
+
+const chartStates = await dashboardElement.getChartStates();
+const dataMask = await dashboardElement.getDataMask();
+
+// Send both payloads to your backend, which forwards them to Preset
+const response = await fetch("/dashboard-permalink", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ chartStates, dataMask }),
+});
+
+const { key } = await response.json();
+console.log("Permalink key:", key); // Store this key to use it on a future load
+```
 
 ### Using a custom `iframeTitle`
 
