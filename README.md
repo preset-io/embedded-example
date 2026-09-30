@@ -193,6 +193,31 @@ dashboardElement.setThemeMode("dark"); // "default", "dark" or "system"
 
 Note that `setThemeMode()` can only take effect after the embedded application has loaded. Use the `themeMode` URL parameter to control which mode the dashboard renders in initially, and `setThemeMode()` for changes afterwards. The two can be combined.
 
+#### Applying a custom theme
+
+To apply a custom theme, use `setThemeConfig()` on the resolved dashboard instance. You can copy the JSON from an existing theme in **Settings > Themes** in your Preset workspace and use it directly — just wrap it with `theme_default` for the light variant and `theme_dark` for the dark variant:
+
+``` javascript
+const dashboardElement = await myLightDashboard;
+
+dashboardElement.setThemeConfig({
+  theme_default: {
+    token: { colorPrimary: "#2893B3", fontFamily: "Inter, sans-serif" }
+  },
+  theme_dark: {
+    algorithm: "dark",
+    token: { colorPrimary: "#2893B3" }
+  }
+});
+```
+
+`theme_dark` is optional, but required for `ssetThemeMode("system")` to take effect. Without
+it, those calls do nothing.
+
+Note that any `setThemeConfig()` call overrides the theme assigned to the dashboard in the workspace. If you never call `setThemeConfig()`, the dashboard's workspace theme is used automatically.
+
+Because the theme is applied after the dashboard loads, users may briefly see the default theme before the custom one takes effect.
+
 ### Managing the dashboard filter state
 
 By default, a dashboard is loaded in Embedded mode with its default filter configuration. It's possible to pass a `permalink_key` to load the dashboard with a particular filter configuration:
